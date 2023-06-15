@@ -85,7 +85,7 @@ async function updateStatusBarItem() {
 			myStatusBarItem.text = `$(smiley) ` + timeToString(timeWorked());
 		}
 		if (!(isEarlier(timeWorked(), setTime(8, 45))) || !(isEarlier(currentTime, setTime(17, 55)))) {
-			myStatusBarItem.text = `$(alert) Time warning! `;
+			myStatusBarItem.text = `$(alert) Time warning! ` + timeToString(timeWorked());;
 		}
 	}
 	myStatusBarItem.show();
@@ -158,6 +158,7 @@ function setTime(hours: number, minutes: number): Date {
 	date.setHours(hours);
 	date.setMinutes(minutes);
 	date.setSeconds(0);
+	date.setMilliseconds(0);
 	return date;
 }
 
