@@ -80,12 +80,15 @@ async function updateStatusBarItem() {
 		if (!isEarlier(currentTime, setTime(13, 0))) {
 			breakTimeTaken = setTime(0, 30);
 		}
+		myStatusBarItem.backgroundColor = "";
 		myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(sign-out) ` + timeToString(goHomeTime());
 		if (!(isEarlier(currentTime, goHomeTime()))) {
-			myStatusBarItem.text = `$(smiley) ` + timeToString(timeWorked());
+
+			myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(smiley) `;
 		}
 		if (!(isEarlier(timeWorked(), setTime(8, 45))) || !(isEarlier(currentTime, setTime(17, 55)))) {
-			myStatusBarItem.text = `$(alert) Time warning! ` + timeToString(timeWorked());;
+			myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
+			myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(alert) `;
 		}
 	}
 	myStatusBarItem.show();
