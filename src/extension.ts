@@ -12,8 +12,7 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
 	// item is selected
 	const myCommandId = 'sample.showSelectionCount';
 	subscriptions.push(vscode.commands.registerCommand(myCommandId, () => {
-		const n = 5;
-		vscode.window.showInformationMessage(`Yeah, ${n} line(s) selected... Keep going!`);
+		updateArrival();
 	}));
 
 	// create a new status bar item that we can now manage
@@ -23,37 +22,45 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
 
 	// register some listener that make sure the status bar 
 	// item always up-to-date
-	subscriptions.push(vscode.window.onDidChangeActiveTextEditor(updateStatusBarItem));
 	subscriptions.push(vscode.window.onDidChangeTextEditorSelection(updateStatusBarItem));
+	subscriptions.push(vscode.window.onDidChangeWindowState(updateStatusBarItem));
+
 
 	// update status bar item once at start
 	updateStatusBarItem();
 }
 
-var arrivalTime = setTime(10, 7);
+var arrivalTime = setTime(0, 0);
 const breakTime = setTime(0, 30);
-let breakTimeTaken = setTime(0, 30);
+let breakTimeTaken = setTime(0, 0);
 const dailyWorkTime = setTime(7, 12);
 
 var active = false;
 
-function updateStatusBarItem(): void {
+async function updateArrival() {
+	arrivalTime = stringToTime(await vscode.window.showInputBox({placeHolder: "Please enter arrival time in the format (H)H:(M)M"}));
+	active = true;
+
+	updateStatusBarItem;
+}
+
+async function updateStatusBarItem(): Promise<void> {
 	var currentTime = new Date();
 
 	if (!active) {
-		arrivalTime = stringToTime(vscode.window.showInputBox());
-		active = true;
-		updateStatusBarItem
+		myStatusBarItem.text = `$(sign-in) Log arrival time`;
 	}
-
-	if (active) {
+	else if (active) {
+		if(!isEarlier(currentTime,setTime(11,30))){ 
+		breakTimeTaken = setTime(0, 30);
+		}
 		myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(sign-out) ` + timeToString(goHomeTime());
-	}
-	if (!(isEarlier(currentTime, goHomeTime()))) {
-		myStatusBarItem.text = `$(smiley) ` + timeToString(timeWorked());
-	}
-	if (!(isEarlier(timeWorked(), setTime(8, 45))) || !(isEarlier(currentTime, setTime(17, 55)))) {
-		myStatusBarItem.text = `$(alert) Time warning! `;
+		if (!(isEarlier(currentTime, goHomeTime()))) {
+			myStatusBarItem.text = `$(smiley) ` + timeToString(timeWorked());
+		}
+		if (!(isEarlier(timeWorked(), setTime(8, 45))) || !(isEarlier(currentTime, setTime(17, 55)))) {
+			myStatusBarItem.text = `$(alert) Time warning! `;
+		}
 	}
 	myStatusBarItem.show();
 }
@@ -111,8 +118,8 @@ function timeToString(date: Date): String {
 }
 
 function stringToTime(string: string | undefined): Date {
-	if(string === undefined){
-		string =  "0:0";
+	if (string === undefined) {
+		string = "0:0";
 	}
 	let stringDate = string.split(':');
 	let h: number = +stringDate[0];
