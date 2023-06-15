@@ -1,8 +1,9 @@
-//TODO: Save arrival time to file (setting.json)
+//TODO: Save arrival time to setting.json
 //TODO: Info message when work time fullfilled / time warning happens
+//TODO: Save standard values to settings.json
 
-import { start } from 'repl';
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 
 let myStatusBarItem: vscode.StatusBarItem;
 
@@ -25,7 +26,7 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
 	subscriptions.push(vscode.window.onDidChangeTextEditorSelection(updateStatusBarItem));
 	subscriptions.push(vscode.window.onDidChangeWindowState(updateStatusBarItem));
 
-
+	fetchArrivalFile();
 	// update status bar item once at start
 	updateStatusBarItem();
 }
@@ -37,22 +38,47 @@ const dailyWorkTime = setTime(7, 12);
 
 var active = false;
 
-async function updateArrival() {
-	arrivalTime = stringToTime(await vscode.window.showInputBox({placeHolder: "Please enter arrival time in the format (H)H:(M)M"}));
-	active = true;
-
-	updateStatusBarItem;
+async function getUserInput() {
+	arrivalTime = stringToTime(await vscode.window.showInputBox({ placeHolder: "Please enter arrival time in the format (H)H:(M)M" }));
 }
 
-async function updateStatusBarItem(): Promise<void> {
+function fetchArrivalFile(): boolean {
+	let currentTime = new Date();
+	let file = fs.readFileSync("D:\\timeOfArrival.txt", { encoding: 'utf8' });
+	let fileArrivalTime = new Date(file.toString());
+
+	if (fileArrivalTime.getDay() === currentTime.getDay()) {
+		arrivalTime = fileArrivalTime;
+		active = true;
+		updateStatusBarItem;
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+function updateArrival() {
+	getUserInput().then(result => {
+		fs.writeFile("D:\\timeOfArrival.txt", arrivalTime.toISOString(), err => {
+			if (err) {
+				vscode.window.showErrorMessage("Arrival time could not be saved!");
+			}
+		});
+		active = true;
+		updateStatusBarItem;
+	});
+}
+
+async function updateStatusBarItem() {
 	var currentTime = new Date();
 
 	if (!active) {
 		myStatusBarItem.text = `$(sign-in) Log arrival time`;
 	}
 	else if (active) {
-		if(!isEarlier(currentTime,setTime(11,30))){ 
-		breakTimeTaken = setTime(0, 30);
+		if (!isEarlier(currentTime, setTime(13, 0))) {
+			breakTimeTaken = setTime(0, 30);
 		}
 		myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(sign-out) ` + timeToString(goHomeTime());
 		if (!(isEarlier(currentTime, goHomeTime()))) {
@@ -109,7 +135,7 @@ function timeAdd(date1: Date, date2: Date): Date {
 	return setTime(hours, minutes);
 }
 
-function timeToString(date: Date): String {
+function timeToString(date: Date): string {
 	let dateString = `${date.getHours()}:${date.getMinutes()}`;
 	if (date.getMinutes() <= 9) {
 		dateString = `${date.getHours()}:0${date.getMinutes()}`;
@@ -131,6 +157,7 @@ function setTime(hours: number, minutes: number): Date {
 	let date = new Date();
 	date.setHours(hours);
 	date.setMinutes(minutes);
+	date.setSeconds(0);
 	return date;
 }
 
