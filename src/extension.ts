@@ -4,11 +4,12 @@
 
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+const schedule = require('node-schedule');
 
 let myStatusBarItem: vscode.StatusBarItem;
 
-export function activate({ subscriptions }: vscode.ExtensionContext) {
 
+export function activate({ subscriptions }: vscode.ExtensionContext) {
 	// register a command that is invoked when the status bar
 	// item is selected
 	const myCommandId = 'sample.showSelectionCount';
@@ -27,9 +28,15 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
 	subscriptions.push(vscode.window.onDidChangeWindowState(updateStatusBarItem));
 
 	fetchArrivalFile();
-	// update status bar item once at start
 	updateStatusBarItem();
 }
+
+const rule = new schedule.RecurrenceRule();
+rule.second = 0; 
+const job = schedule.scheduleJob(rule, function () {
+	updateStatusBarItem();
+});
+
 
 var arrivalTime = setTime(0, 0);
 const breakTime = setTime(0, 30);
@@ -44,23 +51,43 @@ async function getUserInput() {
 
 function fetchArrivalFile(): boolean {
 	let currentTime = new Date();
-	let file = fs.readFileSync("D:\\timeOfArrival.txt", { encoding: 'utf8' });
-	let fileArrivalTime = new Date(file.toString());
+	if (fs.existsSync(pathBuilder())) {
+		let file = fs.readFileSync(pathBuilder(), { encoding: 'utf8' });
+		let fileArrivalTime = new Date(file.toString());
 
-	if (fileArrivalTime.getDay() === currentTime.getDay()) {
-		arrivalTime = fileArrivalTime;
-		active = true;
-		updateStatusBarItem;
-		return true;
+		if (fileArrivalTime.getDay() === currentTime.getDay()) {
+			arrivalTime = fileArrivalTime;
+			active = true;
+			updateStatusBarItem;
+			return true;
+		}
+		return false;
 	}
 	else {
 		return false;
 	}
 }
 
+function pathBuilder(): string {
+	let userName = getUsername();
+	let userPath = "C:\\Users\\" + userName + "\\Documents\\timeOfArrival.txt";
+	return userPath;
+}
+
+function getUsername() {
+	return (
+		process.env.SUDO_USER ||
+		process.env.C9_USER ||
+		process.env.LOGNAME ||
+		process.env.USER ||
+		process.env.LNAME ||
+		process.env.USERNAME
+	);
+}
+
 function updateArrival() {
 	getUserInput().then(result => {
-		fs.writeFile("D:\\timeOfArrival.txt", arrivalTime.toISOString(), err => {
+		fs.writeFile(pathBuilder(), arrivalTime.toISOString(), err => {
 			if (err) {
 				vscode.window.showErrorMessage("Arrival time could not be saved!");
 			}
@@ -84,11 +111,11 @@ async function updateStatusBarItem() {
 		myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(sign-out) ` + timeToString(goHomeTime());
 		if (!(isEarlier(currentTime, goHomeTime()))) {
 
-			myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(smiley) `;
+			myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(smiley) ` + timeToString(timeDiff(timeWorked(),dailyWorkTime));
 		}
 		if (!(isEarlier(timeWorked(), setTime(8, 45))) || !(isEarlier(currentTime, setTime(17, 55)))) {
 			myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
-			myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(alert) `;
+			myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(alert) ` + timeToString(timeDiff(timeWorked(), dailyWorkTime));;
 		}
 	}
 	myStatusBarItem.show();
