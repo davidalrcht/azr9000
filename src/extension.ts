@@ -7,7 +7,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { subscribe } from 'diagnostics_channel';
-const circularSlider = require("@maslick/radiaslider");
 const schedule = require('node-schedule');
 
 
@@ -22,7 +21,7 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
 		updateArrival();
 	}));
 
-	
+
 
 	// create a new status bar item that we can now manage
 	myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1);
@@ -39,7 +38,7 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
 }
 
 const rule = new schedule.RecurrenceRule();
-rule.second = 0; 
+rule.second = 0;
 const job = schedule.scheduleJob(rule, function () {
 	updateStatusBarItem();
 });
@@ -53,7 +52,8 @@ const dailyWorkTime = setTime(7, 12);
 var active = false;
 
 async function getUserInput() {
-	arrivalTime = stringToTime(await vscode.window.showInputBox({ placeHolder: "Please enter arrival time in the format (H)H:(M)M" }));
+	var inputBuffer = await vscode.window.showInputBox({ placeHolder: "Please enter arrival time in the format (H)H:(M)M" });
+	arrivalTime = stringToTime(inputBuffer);
 }
 
 function fetchArrivalFile(): boolean {
@@ -94,13 +94,15 @@ function getUsername() {
 
 function updateArrival() {
 	getUserInput().then(result => {
-		fs.writeFile(pathBuilder(), arrivalTime.toISOString(), err => {
-			if (err) {
-				vscode.window.showErrorMessage("Arrival time could not be saved!");
-			}
-		});
-		active = true;
-		updateStatusBarItem;
+		if (arrivalTime !== undefined) {
+			fs.writeFile(pathBuilder(), arrivalTime.toISOString(), err => {
+				if (err) {
+					vscode.window.showErrorMessage("Arrival time could not be saved!");
+				}
+			});
+			active = true;
+			updateStatusBarItem;
+		}
 	});
 }
 
@@ -118,7 +120,7 @@ async function updateStatusBarItem() {
 		myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(sign-out) ` + timeToString(goHomeTime());
 		if (!(isEarlier(currentTime, goHomeTime()))) {
 
-			myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(smiley) ` + timeToString(timeDiff(timeWorked(),dailyWorkTime));
+			myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(smiley) ` + timeToString(timeDiff(timeWorked(), dailyWorkTime));
 		}
 		if (!(isEarlier(timeWorked(), setTime(8, 45))) || !(isEarlier(currentTime, setTime(17, 55)))) {
 			myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
