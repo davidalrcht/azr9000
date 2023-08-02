@@ -14,7 +14,14 @@
     "onStartupFinished"
   ],
   "main": "./out/extension.js",
-  "contributes": {},
+  "contributes": {
+    "commands":[
+      {
+        "command": "azr9000.coffeeTime",
+        "title": "Coffee?"
+      }
+    ]
+  },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
@@ -37,6 +44,7 @@
     "typescript": "^5.1.3"
   },
   "dependencies": {
+    "@maslick/radiaslider": "^1.9.8",
     "node-schedule": "^2.1.1"
   }
 }

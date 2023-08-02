@@ -1,13 +1,18 @@
 //TODO: Save arrival time to setting.json
 //TODO: Info message when work time fullfilled / time warning happens
 //TODO: Save standard values to settings.json
+//TODO: Slider for setting time
+//TODO: Easteregg for Coffe Notification
 
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import { subscribe } from 'diagnostics_channel';
+const circularSlider = require("@maslick/radiaslider");
 const schedule = require('node-schedule');
 
-let myStatusBarItem: vscode.StatusBarItem;
 
+
+let myStatusBarItem: vscode.StatusBarItem;
 
 export function activate({ subscriptions }: vscode.ExtensionContext) {
 	// register a command that is invoked when the status bar
@@ -16,6 +21,8 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
 	subscriptions.push(vscode.commands.registerCommand(myCommandId, () => {
 		updateArrival();
 	}));
+
+	
 
 	// create a new status bar item that we can now manage
 	myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1);
