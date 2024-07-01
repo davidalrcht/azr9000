@@ -9,8 +9,6 @@ import * as fs from 'fs';
 import { subscribe } from 'diagnostics_channel';
 const schedule = require('node-schedule');
 
-
-
 let myStatusBarItem: vscode.StatusBarItem;
 
 export function activate({ subscriptions }: vscode.ExtensionContext) {
@@ -20,8 +18,6 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
 	subscriptions.push(vscode.commands.registerCommand(myCommandId, () => {
 		updateArrival();
 	}));
-
-
 
 	// create a new status bar item that we can now manage
 	myStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 1);
@@ -35,6 +31,13 @@ export function activate({ subscriptions }: vscode.ExtensionContext) {
 
 	fetchArrivalFile();
 	updateStatusBarItem();
+
+	// Periodically update the status bar item, e.g., every minute (60000 milliseconds)
+	const updateInterval = 60000; // 1 minute
+	setInterval(() => {
+		updateStatusBarItem();
+	}, updateInterval);
+
 }
 
 const rule = new schedule.RecurrenceRule();
@@ -113,7 +116,7 @@ async function updateStatusBarItem() {
 		myStatusBarItem.text = `$(sign-in) Log arrival time`;
 	}
 	else if (active) {
-		if (!isEarlier(currentTime, setTime(13, 0))) {
+		if (!isEarlier(currentTime, setTime(11, 50))) {
 			breakTimeTaken = setTime(0, 30);
 		}
 		myStatusBarItem.backgroundColor = "";
