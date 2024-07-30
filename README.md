@@ -1,10 +1,11 @@
 # azr9000 README
+WARNING: Code is full of magic numbers and bugs. Will be fixed (maybe).
 
 Small extension which displays the time that you worked and when you can leave.
 
 Click on the Status bar icon to enter your arrival time, thats it!
 
-Still a work in progress, so here's a german poem about this extension: 
+Will be a work in progress for the foreseeable future, so here's a german poem: 
 
 **Verse 1:**
 

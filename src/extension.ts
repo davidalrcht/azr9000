@@ -120,15 +120,33 @@ async function updateStatusBarItem() {
 			breakTimeTaken = setTime(0, 30);
 		}
 		myStatusBarItem.backgroundColor = "";
-		myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(sign-out) ` + timeToString(goHomeTime());
-		if (!(isEarlier(currentTime, goHomeTime()))) {
+		
+		
+		myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(sign-out) ` + timeToString(goHomeTime()) + `  $(home) ` + timeToString(maxTime()) + `  $(debug-step-over) ` + timeToString(timeDiff(maxTime(), timeAdd(setTime(0,15),goHomeTime())));
 
-			myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(smiley) ` + timeToString(timeDiff(timeWorked(), dailyWorkTime));
+		if (!isEarlier(currentTime, goHomeTime())) {
+			myStatusBarItem.text = `$(watch) ` + timeToString(timeDiff(timeWorked(), setTime(0,15))) + `  $(home) ` + timeToString(maxTime()) + `  $(debug-step-over) ` + timeToString(timeDiff(maxTime(), timeAdd(setTime(0, 15), goHomeTime())));
 		}
-		if (!(isEarlier(timeWorked(), setTime(8, 45))) || !(isEarlier(currentTime, setTime(17, 55)))) {
-			myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
-			myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(alert) ` + timeToString(timeDiff(timeWorked(), dailyWorkTime));;
+
+		if (isEarlier(maxTime(), timeAdd(arrivalTime, setTime(9, 30))) && !isEarlier(currentTime, goHomeTime())) {
+			myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(home) ` + timeToString(maxTime()) + `  $(debug-step-over) ` + timeToString(timeDiff(maxTime(), timeAdd(setTime(0, 0), goHomeTime())));
 		}
+
+		if (isEarlier(maxTime(), timeAdd(arrivalTime, setTime(9,30)))) {
+		myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(sign-out) ` + timeToString(goHomeTime()) + `  $(home) ` + timeToString(maxTime()) + `  $(debug-step-over) ` + timeToString(timeDiff(maxTime(), timeAdd(setTime(0, 0), goHomeTime())));
+		}
+
+		if (!isEarlier(goHomeTime(), maxTime())) {
+			myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(sign-out) ` + timeToString(goHomeTime());
+		}
+
+		// if (!(isEarlier(currentTime, goHomeTime()))) {
+		// 	myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(smiley) ` + timeToString(timeDiff(timeWorked(), dailyWorkTime));
+		// }
+		// if (!(isEarlier(timeWorked(), setTime(8, 45))) || !(isEarlier(currentTime, setTime(17, 55)))) {
+		// 	myStatusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
+		// 	myStatusBarItem.text = `$(watch) ` + timeToString(timeWorked()) + `  $(alert) ` + timeToString(timeDiff(timeWorked(), dailyWorkTime));;
+		// }
 	}
 	myStatusBarItem.show();
 }
@@ -146,7 +164,21 @@ function isEarlier(date1: Date, date2: Date): boolean {
 }
 
 function goHomeTime(): Date {
-	return timeAdd(timeAdd(dailyWorkTime, arrivalTime), breakTime);
+	if (!isEarlier(timeAdd(timeAdd(dailyWorkTime, arrivalTime), breakTime), setTime(18, 0))) {
+		return setTime(18, 0);
+	}
+	else {
+		return timeAdd(timeAdd(dailyWorkTime, arrivalTime), breakTime);
+	}
+}
+
+function maxTime(): Date {
+	if (!isEarlier(timeAdd(timeAdd(setTime(10,0), arrivalTime), setTime(0,45)), setTime(18,0))) {
+		return setTime(18,0);
+	}
+	else {
+		return timeAdd(timeAdd(setTime(10,0), arrivalTime), setTime(0,45));
+	}
 }
 
 function timeWorked(): Date {
